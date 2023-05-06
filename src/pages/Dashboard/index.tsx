@@ -1,4 +1,6 @@
-import React from "react";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React, { useState } from "react";
 import {
   Text,
   SafeAreaView,
@@ -6,8 +8,25 @@ import {
   TextInput,
   StyleSheet,
 } from "react-native";
+import { StackParamsList } from "../../routes/app.routes";
+import { orderService } from "../../services/order";
 
 const Dashboard = () => {
+  const [table, setTable] = useState("");
+  const navigation =
+    useNavigation<NativeStackNavigationProp<StackParamsList>>();
+
+  const openOrder = async () => {
+    if (table === "") return;
+
+    const res = await orderService.openTable({ table: Number(table) });
+
+    if (res) {
+      navigation.navigate("Order", { table: Number(table), order_id: res.id });
+      setTable("");
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Novo pedido</Text>
@@ -15,9 +34,11 @@ const Dashboard = () => {
         placeholder="Número da mesa"
         placeholderTextColor="#f0f0f0"
         style={styles.input}
+        value={table}
+        onChangeText={setTable}
         keyboardType="numeric"
       />
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={openOrder}>
         <Text style={styles.buttonText}>Abrir mesa</Text>
       </TouchableOpacity>
     </SafeAreaView>
