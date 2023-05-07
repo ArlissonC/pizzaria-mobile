@@ -4,6 +4,8 @@ import {
   AddProductOrderRequest,
   AddProductOrderResponse,
   CloseTableResponse,
+  FinishOrderRequest,
+  FinishOrderResponse,
   OpenTableRequest,
   OpenTableResponse,
   RemoveProductOrderResponse,
@@ -68,9 +70,23 @@ const removeProductsOrder = async (
   }
 };
 
+const finishOrder = async (
+  params: FinishOrderRequest,
+): Promise<FinishOrderResponse | undefined> => {
+  try {
+    const res = await httpClient.put<FinishOrderResponse>("order/send", params);
+    const data: FinishOrderResponse = res.data;
+    return data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+    }
+  }
+};
+
 export const orderService = {
   openTable,
   closeTable,
   addProductsOrder,
   removeProductsOrder,
+  finishOrder,
 };

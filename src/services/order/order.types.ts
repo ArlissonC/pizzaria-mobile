@@ -35,3 +35,15 @@ export type RemoveProductOrderResponse = {
   product_id: string;
   order_id: string;
 };
+
+export type FinishOrderRequest = {
+  order_id: string;
+};
+
+export type FinishOrderResponse = {
+  id: string;
+  table: number;
+  status: boolean;
+  draft: boolean;
+  name: string;
+};
