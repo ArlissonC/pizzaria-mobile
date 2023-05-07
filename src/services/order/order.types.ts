@@ -16,3 +16,22 @@ export type CloseTableResponse = {
   id: string;
   table: number;
 };
+
+export type AddProductOrderRequest = {
+  order_id: string;
+  product_id: string;
+  amount: number;
+};
+
+export type AddProductOrderResponse = {
+  id: string;
+  amount: number;
+  product_id: string;
+};
+
+export type RemoveProductOrderResponse = {
+  id: string;
+  amout: string;
+  product_id: string;
+  order_id: string;
+};

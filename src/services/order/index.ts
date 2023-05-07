@@ -1,9 +1,12 @@
 import { AxiosError } from "axios";
 import { httpClient } from "../httpClient";
 import {
+  AddProductOrderRequest,
+  AddProductOrderResponse,
   CloseTableResponse,
   OpenTableRequest,
   OpenTableResponse,
+  RemoveProductOrderResponse,
 } from "./order.types";
 
 const openTable = async (
@@ -34,4 +37,40 @@ const closeTable = async (
   }
 };
 
-export const orderService = { openTable, closeTable };
+const addProductsOrder = async (
+  params: AddProductOrderRequest,
+): Promise<AddProductOrderResponse | undefined> => {
+  try {
+    const res = await httpClient.post<AddProductOrderResponse>(
+      "order/add",
+      params,
+    );
+    const data: AddProductOrderResponse = res.data;
+    return data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+    }
+  }
+};
+
+const removeProductsOrder = async (
+  item_id: string,
+): Promise<RemoveProductOrderResponse | undefined> => {
+  try {
+    const res = await httpClient.del<RemoveProductOrderResponse>(
+      `order/remove?item_id=${item_id}`,
+    );
+    const data: RemoveProductOrderResponse = res.data;
+    return data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+    }
+  }
+};
+
+export const orderService = {
+  openTable,
+  closeTable,
+  addProductsOrder,
+  removeProductsOrder,
+};

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
+  FlatList,
 } from "react-native";
 
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
@@ -17,12 +18,20 @@ import { categoryService } from "../../services/category";
 import ModalPicker from "../../components/ModalPicker";
 import { productService } from "../../services/product";
 import { Product } from "../../services/product/product.types";
+import ListItem from "../../components/ListItem";
 
 type RouteDetailParams = {
   Order: {
     table: string;
     order_id: string;
   };
+};
+
+type ItemProps = {
+  id: string;
+  product_id: string;
+  name: string;
+  amount: string | number;
 };
 
 type OrderRouteProps = RouteProp<RouteDetailParams, "Order">;
@@ -32,6 +41,7 @@ export default function Order() {
   const navigation = useNavigation();
   const [categories, setCategories] = useState<ListCategoriesResponse[]>([]);
   const [amount, setAmount] = useState("1");
+  const [items, setItems] = useState<ItemProps[]>([]);
   const [categorySelected, setCategorySelected] =
     useState<ListCategoriesResponse>();
   const [modalCategoryVisible, setModalCategoryVisible] = useState(false);
@@ -63,8 +73,6 @@ export default function Order() {
           category_id: categorySelected.id,
         });
 
-        console.log(resProducts);
-
         if (resProducts) {
           setProducts(resProducts);
           setProductSelected(resProducts[0]);
@@ -81,13 +89,42 @@ export default function Order() {
     setProductSelected(item);
   };
 
+  const handleAdd = async () => {
+    const res = await orderService.addProductsOrder({
+      amount: Number(amount),
+      order_id: route.params.order_id,
+      product_id: productSelected?.id!,
+    });
+
+    if (res) {
+      const data = {
+        ...res,
+        name: productSelected?.name as string,
+      };
+
+      setItems((prev) => [...prev, data]);
+    }
+  };
+
+  const handleRemove = async (item_id: string) => {
+    const res = await orderService.removeProductsOrder(item_id);
+
+    console.log(res);
+
+    if (res) {
+      setItems((prev) => prev.filter((i) => i.id !== res.id));
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Mesa {route.params.table}</Text>
-        <TouchableOpacity onPress={handleCloseOrder}>
-          <Feather name="trash-2" size={28} color="#FF3F4b" />
-        </TouchableOpacity>
+        {items.length === 0 && (
+          <TouchableOpacity onPress={handleCloseOrder}>
+            <Feather name="trash-2" size={28} color="#FF3F4b" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {categories.length > 0 && (
@@ -120,14 +157,27 @@ export default function Order() {
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.buttonAdd}>
+        <TouchableOpacity style={styles.buttonAdd} onPress={handleAdd}>
           <Text style={styles.buttonText}>+</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity
+          style={[styles.button, { opacity: items.length === 0 ? 0.3 : 1 }]}
+          disabled={items.length === 0}
+        >
           <Text style={styles.buttonText}>Avançar</Text>
         </TouchableOpacity>
       </View>
+
+      <FlatList
+        showsVerticalScrollIndicator={false}
+        style={{ flex: 1, marginTop: 24 }}
+        data={items}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <ListItem data={item} deleteItem={handleRemove} />
+        )}
+      />
 
       <Modal
         transparent={true}
