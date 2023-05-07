@@ -1,16 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Modal,
 } from "react-native";
 
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 
 import { Feather } from "@expo/vector-icons";
 import { orderService } from "../../services/order";
+import { ListCategoriesResponse } from "../../services/category/category.types";
+import { categoryService } from "../../services/category";
+import ModalPicker from "../../components/ModalPicker";
+import { productService } from "../../services/product";
+import { Product } from "../../services/product/product.types";
 
 type RouteDetailParams = {
   Order: {
@@ -24,11 +30,50 @@ type OrderRouteProps = RouteProp<RouteDetailParams, "Order">;
 export default function Order() {
   const route = useRoute<OrderRouteProps>();
   const navigation = useNavigation();
+  const [categories, setCategories] = useState<ListCategoriesResponse[]>([]);
+  const [amount, setAmount] = useState("1");
+  const [categorySelected, setCategorySelected] =
+    useState<ListCategoriesResponse>();
+  const [modalCategoryVisible, setModalCategoryVisible] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productSelected, setProductSelected] = useState<Product>();
 
   const handleCloseOrder = async () => {
     const res = await orderService.closeTable(route.params.order_id);
 
     if (res) navigation.goBack();
+  };
+
+  useEffect(() => {
+    (async () => {
+      const resCategories = await categoryService.listCategories();
+
+      if (resCategories) {
+        setCategories(resCategories);
+        setCategorySelected(resCategories[0]);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      if (categorySelected) {
+        const resProducts = await productService.getProductsByCategory({
+          category_id: categorySelected.id,
+        });
+
+        console.log(resProducts);
+
+        if (resProducts) {
+          setProducts(resProducts);
+          setProductSelected(resProducts[0]);
+        }
+      }
+    })();
+  }, [categorySelected]);
+
+  const handleChangeCategory = (item: ListCategoriesResponse) => {
+    setCategorySelected(item);
   };
 
   return (
@@ -40,13 +85,20 @@ export default function Order() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.input}>
-        <Text style={{ color: "#FFF" }}>Pizzas</Text>
-      </TouchableOpacity>
+      {categories.length > 0 && (
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => setModalCategoryVisible(true)}
+        >
+          <Text style={{ color: "#FFF" }}>{categorySelected?.name}</Text>
+        </TouchableOpacity>
+      )}
 
-      <TouchableOpacity style={styles.input}>
-        <Text style={{ color: "#FFF" }}>Pizza de calabresa</Text>
-      </TouchableOpacity>
+      {products.length > 0 && (
+        <TouchableOpacity style={styles.input}>
+          <Text style={{ color: "#FFF" }}>{productSelected?.name}</Text>
+        </TouchableOpacity>
+      )}
 
       <View style={styles.qtdContainer}>
         <Text style={styles.qtdText}>Quantidade</Text>
@@ -54,7 +106,8 @@ export default function Order() {
           style={[styles.input, { width: "60%", textAlign: "center" }]}
           placeholderTextColor="#F0F0F0"
           keyboardType="numeric"
-          value="1"
+          value={amount}
+          onChangeText={setAmount}
         />
       </View>
 
@@ -67,6 +120,18 @@ export default function Order() {
           <Text style={styles.buttonText}>Avançar</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        transparent={true}
+        visible={modalCategoryVisible}
+        animationType="fade"
+      >
+        <ModalPicker
+          handleCloseModal={() => setModalCategoryVisible(false)}
+          options={categories}
+          selectedItem={handleChangeCategory}
+        />
+      </Modal>
     </View>
   );
 }
