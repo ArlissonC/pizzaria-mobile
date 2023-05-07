@@ -3,13 +3,8 @@ import axios, { AxiosResponse } from "axios";
 
 const baseURL = "http://192.168.0.158:3333";
 
-const http = axios.create({
+export const http = axios.create({
   baseURL,
-});
-
-AsyncStorage.getItem("@pizzaria").then((data) => {
-  const token = JSON.parse(data as string)?.token;
-  if (token) http.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 });
 
 const get = <T>(

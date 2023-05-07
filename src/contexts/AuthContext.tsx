@@ -7,6 +7,7 @@ import {
 } from "react";
 import { authService } from "../services/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { http } from "../services/httpClient";
 
 type AuthContextData = {
   user: UserProps;
@@ -71,10 +72,13 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       const userData: UserProps = JSON.parse(data as string);
       if (userData?.name) {
         setUser({ ...userData });
+        http.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${userData.token}`;
       }
       setLoading(false);
     });
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <AuthContext.Provider
