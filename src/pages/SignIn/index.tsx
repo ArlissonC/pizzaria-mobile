@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { TextInput } from "react-native";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, Image } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 
 const SignIn = () => {
@@ -17,6 +17,7 @@ const SignIn = () => {
 
   return (
     <View style={styles.container}>
+      <Image source={require("../../../assets/logo.png")} />
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Digite seu email"
@@ -53,9 +54,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#1d1d2e",
-  },
-  logo: {
-    marginBottom: 18,
   },
   inputContainer: {
     width: "95%",

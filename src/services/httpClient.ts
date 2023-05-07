@@ -1,7 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, { AxiosResponse } from "axios";
 
-const baseURL = "http://192.168.0.158:3333";
+const baseURL = "https://arlissonc-pizzaria-api.onrender.com";
 
 export const http = axios.create({
   baseURL,
